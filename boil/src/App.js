@@ -1,54 +1,117 @@
-import { useState} from "react";
+import { useEffect, useState } from "react";
+import "./App.css";
+import { Table } from "./components/Table";
+import { Modal } from "./components/Modal";
+import cytoscape from 'cytoscape';
 
-import "./App.css"
-import {Table} from "./components/Table";
-import {Modal} from "./components/Modal";
+function App() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [rows, setRows] = useState([]);
 
-function  App(){
-    const [modalOpen, setModalOpen] = useState(false);
-    const [rows, setRows] = useState([
-        {czynnosc: "A", czas_trwania: "2", nastepstwoL: "1", nastepstwoP: "2"},
-        {czynnosc: "B", czas_trwania: "4", nastepstwoL: "2", nastepstwoP: "3"},
-        {czynnosc: "C", czas_trwania: "2", nastepstwoL: "1", nastepstwoP: "4"},
-    ]);
+  const generateGraph = (data) => {
+    const elements = [];
+    const points = new Set(); // Użyjemy zbioru, aby uniknąć duplikatów
 
-    const [rowToEdit, setRowToEdit] =useState(null);
+    // Dodajemy wierzchołki do zbioru punktów
+    data.forEach(row => {
+      points.add(row.nastepstwoL);
+      points.add(row.nastepstwoP);
+    });
 
-    const handleDeleteRow = (targetIndex) =>{
-        setRows(rows.filter((_, idx) => idx !== targetIndex));
-    };
+    // Tworzymy wierzchołki na podstawie punktów
+    points.forEach(point => {
+      elements.push({ group: 'nodes', data: { id: `point${point}`, label: `${point}` } });
+    });
 
-    const handleEditRow = (idx) => {
-        setRowToEdit(idx);
+    // Dodajemy krawędzie na podstawie danych z tabeli
+    data.forEach(row => {
+      const edgeId = `edge${row.czynnosc}`;
+      const label = `${row.czynnosc} (${row.czas_trwania})`; // Dodajemy czas trwania do etykiety krawędzi
+      elements.push({ group: 'edges', data: { id: edgeId, source: `point${row.nastepstwoL}`, target: `point${row.nastepstwoP}`, label: label } });
+    });
 
-        setModalOpen(true);
-    }
+    const cy = cytoscape({
+      container: document.getElementById('cy'),
+      elements: elements,
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'background-color': '#69e',
+            'label': 'data(label)',
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 1,
+            'line-color': '#369',
+            'target-arrow-color': '#369',
+            'target-arrow-shape': 'triangle',
+            'label': 'data(label)',
+            'font-size': '14px',
+            'color': '#777'
+          }
+        }
+      ],
+      layout: {
+        name: 'cose',
+        nodeRepulsion: 20000000,
+        rows: 1,
+      }
+    });
+  };
 
-    const handleSubmit = (newRow) => {
-        rowToEdit=== null
-            ? setRows([...rows, newRow])
-            : setRows(
-                rows.map((currRow, idx) =>{
-                if(idx !== rowToEdit) return currRow
+  useEffect(() => {
+    generateGraph(rows);
+  }, [rows]);
 
-                return newRow
+  const [rowToEdit, setRowToEdit] = useState(null);
+
+  const handleDeleteRow = (targetIndex) => {
+    setRows(rows.filter((_, idx) => idx !== targetIndex));
+  };
+
+  const handleEditRow = (idx) => {
+    setRowToEdit(idx);
+
+    setModalOpen(true);
+  }
+
+  const handleSubmit = (newRow) => {
+    rowToEdit === null
+        ? setRows([...rows, newRow])
+        : setRows(
+            rows.map((currRow, idx) => {
+              if (idx !== rowToEdit) return currRow
+
+              return newRow
             })
-            );
-    }
-    return <div className="App">
+        );
+  }
+
+  return (
+      <div className="App">
         <Table rows={rows} deleteRow={handleDeleteRow} editRow={handleEditRow}/>
         <button className="btn" onClick={() => setModalOpen(true)}>Dodaj</button>
         {modalOpen && (<Modal
-            closeModal={()=> {
-                setModalOpen(false);
-                setRowToEdit(null);
-            }}
-            onSubmit={handleSubmit}
-            defaultValue={rowToEdit !== null && rows[rowToEdit]}
+                closeModal={() => {
+                  setModalOpen(false);
+                  setRowToEdit(null);
+                }}
+                onSubmit={handleSubmit}
+                defaultValue={rowToEdit !== null && rows[rowToEdit]}
             />
-            ) }
+        )}
         <button className="btn">Wyślij</button>
-    </div>;
+        <div id="cy" style={{width: '80%', height: '600px', margin: 'auto'}}></div>
+      </div>
+  );
 }
 
 export default App;
+
+
+//trzeba dodac "cos" do strony bo jak sie doda zbyt duzo czynnosci do tabeli to graf
+//predzej czy pozniej zniknie
+

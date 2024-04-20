@@ -45,8 +45,8 @@ export const Modal = ({closeModal, onSubmit, defaultValue}) => {
     };
     return(
         <div className="modal-container" onClick={(e)=>{
-                if(e.target.className === "modal-container") closeModal();
-            }}
+            if(e.target.className === "modal-container") closeModal();
+        }}
         >
             <div className="modal">
                 <form>
