@@ -5,13 +5,15 @@ def calculate_time_reserves(tasks, predecessors):
     if not tasks:
         return []
 
+
     # inicjalizacja ES i EF
     for t in tasks:
+
         for pre_id in predecessors.get(t.id, []):
             pre = next((task for task in tasks if task.id == pre_id), None)
             if pre and t.ES < pre.EF:
                 t.ES = pre.EF
-        t.EF = t.ES + t.duration
+        t.EF = t.ES + int(t.duration)
         t.save()
 
     # ustalenie maksymalnego EF jako LF dla zadań końcowych
@@ -20,7 +22,7 @@ def calculate_time_reserves(tasks, predecessors):
     # inicjalizacja LF i LS dla wszystkich zadań
     for t in tasks:
         t.LF = latest_finish
-        t.LS = t.LF - t.duration
+        t.LS = t.LF - int(t.duration)
         t.save()
 
     # najpozniejsze
@@ -29,7 +31,7 @@ def calculate_time_reserves(tasks, predecessors):
             pre = next((task for task in tasks if task.id == pre_id), None)
             if pre and pre.LF > t.LS:
                 pre.LF = t.LS
-                pre.LS = pre.LF - pre.duration
+                pre.LS = pre.LF - int(pre.duration)
                 pre.save()
 
     # obliczenie slacka dla każdego zadania
