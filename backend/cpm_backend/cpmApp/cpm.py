@@ -1,61 +1,53 @@
 from .models import Task
+from collections import defaultdict
 
-def calculate_time_reserves(tasks):
+def calculate_time_reserves(tasks, predecessors):
     if not tasks:
         return []
 
     # inicjalizacja ES i EF
     for t in tasks:
-        #print(t.predecessors.all())
-        for pre in t.predecessors.all():
-            #print("w if ", t.ES, pre.EF, t.ES < pre.EF)
-            if t.ES < pre.EF:
+        for pre_id in predecessors.get(t.id, []):
+            pre = next((task for task in tasks if task.id == pre_id), None)
+            if pre and t.ES < pre.EF:
                 t.ES = pre.EF
         t.EF = t.ES + t.duration
         t.save()
-        #print(f"Task {t.desc}: ES={t.ES}, EF={t.EF}")
 
     # ustalenie maksymalnego EF jako LF dla zadań końcowych
     latest_finish = max(t.EF for t in tasks)
 
-    # Inicjalizacja LF i LS dla wszystkich zadań
+    # inicjalizacja LF i LS dla wszystkich zadań
     for t in tasks:
-        #print(t, t.duration, t.predecessors.all())
         t.LF = latest_finish
         t.LS = t.LF - t.duration
         t.save()
-        #print(t.desc, 'Inicjalizacja: t.LF ', t.LF, 't.LS', t.LS)
-
 
     # najpozniejsze
     for t in reversed(tasks):
-        #print(t, t.duration, t.predecessors.all())
-        for pre in t.predecessors.all():
-            #print(pre.desc, pre.duration)
-            # zaktualizuj tylko jesli nowy LF dla poprzednika jest mniejszy niz aktualny
-            pre.refresh_from_db()
-            if pre.LF > t.LS:
-                #print('W if ',pre.desc, pre.LF,t.desc, t.LS, pre.LF > t.LS)
-                for task in tasks:
-                    if task.desc == pre.desc:
-                        task.LF = t.LS
-                        task.LS = task.LF - task.duration
+        for pre_id in predecessors.get(t.id, []):
+            pre = next((task for task in tasks if task.id == pre_id), None)
+            if pre and pre.LF > t.LS:
                 pre.LF = t.LS
                 pre.LS = pre.LF - pre.duration
-                #print('Po zmianie ',pre.desc, pre.LS)
-            pre.save()
-        #print(t.desc, 'Obliczone: t.LF ', t.LF, ' t.LS', t.LS)
+                pre.save()
 
-    # obliczenie slacka dla każdego zadania i aktualizacja atrybutu krytycznego
+    # obliczenie slacka dla każdego zadania
     for t in tasks:
         t.computeSlack()
 
-    latest_finish = max(t.EF for t in tasks)
-    end_task = Task(desc='End', duration=0, ES=latest_finish, EF=latest_finish)
-    tasks.append(end_task)
-    end_task.LF = end_task.EF
-    end_task.LS = end_task.LF - end_task.duration
-    end_task.save()
+def convert_successors_to_predecessors_format(tasks):
+    task_dict = {task.id: task for task in tasks}
+    predecessors = defaultdict(list)
+
+    for task in tasks:
+        if task.succ_left:
+            predecessors[task.succ_left.id].append(task.id)
+        if task.succ_right:
+            predecessors[task.succ_right.id].append(task.id)
+
+    return tasks, predecessors
+
 
 def find_critical_path(tasks):
     # iteruje po taskach i zwraca sciezke krytyczna
