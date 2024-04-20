@@ -90,6 +90,21 @@ function App() {
         );
   }
 
+  const handleSend = async ()=>{
+    console.log(rows)
+    // e.preventDefault()
+    
+
+    const response = await fetch('http://127.0.0.1:8000/api/tasks/', {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(rows),
+      headers:{
+          'Content-Type': 'application/json'
+      }
+  })
+  }
+
   return (
       <div className="App">
         <Table rows={rows} deleteRow={handleDeleteRow} editRow={handleEditRow}/>
@@ -103,7 +118,7 @@ function App() {
                 defaultValue={rowToEdit !== null && rows[rowToEdit]}
             />
         )}
-        <button className="btn">Wyślij</button>
+        <button className="btn" onClick={()=>handleSend()}>Wyślij</button>
         <div id="cy" style={{width: '80%', height: '600px', margin: 'auto'}}></div>
       </div>
   );
