@@ -12,7 +12,10 @@ def calculate_time_reserves(tasks, predecessors):
         for pre_id in predecessors.get(t.id, []):
             pre = next((task for task in tasks if task.id == pre_id), None)
             if pre and t.ES < pre.EF:
+
                 t.ES = pre.EF
+        print(t.desc, 'ES', t.ES)
+        print(t.desc, 'EF',t.EF)
         t.EF = t.ES + int(t.duration)
         t.save()
 

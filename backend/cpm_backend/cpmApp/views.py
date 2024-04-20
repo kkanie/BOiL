@@ -11,23 +11,27 @@ from .cpm import *
 def create_task(request):
     Task.objects.all().delete()  # usuwam taski przed wstawieniem nowych
 
-    tasks_data = request.data.get('tasks', [])
+    if isinstance(request.data, list):
+        tasks_data = request.data
+    else:
+        tasks_data = request.data.get('tasks', [])
+
     created_tasks = {}
 
     # tworzenie tasków
     for task_data in tasks_data:
         task, created = Task.objects.get_or_create(
-            desc=task_data['desc'],
-            defaults={'duration': task_data['duration']}
+            desc=task_data['czynnosc'],
+            defaults={'duration': task_data['czas_trwania']}
         )
-        created_tasks[task_data['desc']] = task
+        created_tasks[task_data['czynnosc']] = task
 
     # przypisywanie następców
     for task_data in tasks_data:
-        task = created_tasks[task_data['desc']]
+        task = created_tasks[task_data['czynnosc']]
         #przypisywanie następców na podstawie desc
-        succ_left = created_tasks.get(task_data.get('succ_left'))
-        succ_right = created_tasks.get(task_data.get('succ_right'))
+        succ_left = created_tasks.get(task_data.get('nastepstwoL'))
+        succ_right = created_tasks.get(task_data.get('nastepstwoP'))
         task.succ_left = succ_left
         task.succ_right = succ_right
         task.save()
