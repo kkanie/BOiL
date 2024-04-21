@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import axios from "axios";
 import { Table } from "./components/Table";
 import { Modal } from "./components/Modal";
 import cytoscape from 'cytoscape';
 
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [rows, setRows] = useState([]);
@@ -91,18 +93,32 @@ function App() {
   }
 
   const handleSend = async ()=>{
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/tasks/', rows, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      console.log(response.data);
+      // Handle success response here
+    } catch (error) {
+      console.error('Error:', error);
+      // Handle error here
+    }
     console.log(rows)
-    // e.preventDefault()
+    // // e.preventDefault()
     
 
-    const response = await fetch('http://127.0.0.1:8000/api/tasks/', {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(rows),
-      headers:{
-          'Content-Type': 'application/json'
-      }
-  })
+    // const response = await fetch('http://127.0.0.1:8000/api/tasks/', {
+    //   method: 'POST',
+    //   mode: 'no-cors',
+    //   body: JSON.stringify(rows),
+    //   headers:{
+    //       'Content-Type': 'application/json'
+    //   }
+  // })
   }
 
   return (

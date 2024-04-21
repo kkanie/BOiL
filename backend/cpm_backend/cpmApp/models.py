@@ -4,8 +4,14 @@ from django import forms
 
 class Task(models.Model):
     desc = models.CharField(max_length=255)
-    duration = models.IntegerField()
-    predecessors = models.ManyToManyField('self', symmetrical=False)
+    duration = models.CharField(max_length=9)
+    #predecessors = models.ManyToManyField('self', symmetrical=False)
+    succ_left = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='left_successors')
+    succ_right = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='right_successors')
+
+
     ES = models.IntegerField(default=0, editable=False)
     EF = models.IntegerField(default=duration, editable=False)
     LS = models.FloatField(default=999999, editable=False)
@@ -25,13 +31,12 @@ class Task(models.Model):
         self.save()
 
     def save(self, *args, **kwargs):
-        self.EF = self.ES + self.duration
+        duration_int = int(self.duration) if self.duration.isdigit() else 0
+        if self.id is None:
+            self.EF = self.ES + duration_int
         super(Task, self).save(*args, **kwargs)
 
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['desc', 'duration', 'predecessors']
-        widgets = {
-            'predecessors': forms.CheckboxSelectMultiple
-        }
+        fields = ['desc', 'duration', 'succ_left', 'succ_right']
