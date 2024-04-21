@@ -4,11 +4,16 @@ import axios from "axios";
 import { Table } from "./components/Table";
 import { Modal } from "./components/Modal";
 import cytoscape from 'cytoscape';
+import Wynik from './components/Wynik.jsx';
+import WynikList from "./components/Wynik.jsx";
 
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [rows, setRows] = useState([]);
+  // const [wynik, setWynik] = useState([]);
+  
+
 
   const generateGraph = (data) => {
     const elements = [];
@@ -121,6 +126,15 @@ function App() {
   // })
   }
 
+//   const handleCalculate = async() =>{
+//     // GET request using axios with async/await
+//     const response = await axios.get('http://127.0.0.1:8000/api/calculate/');
+//     //console.log(response)
+//     setWynik([...wynik, response.data.tasks])
+//     console.log(wynik)
+    
+// }
+
   return (
       <div className="App">
         <Table rows={rows} deleteRow={handleDeleteRow} editRow={handleEditRow}/>
@@ -135,6 +149,8 @@ function App() {
             />
         )}
         <button className="btn" onClick={()=>handleSend()}>Wyślij</button>
+        <button className="btn" >Wynik</button>
+        <WynikList/>
         <div id="cy" style={{width: '80%', height: '600px', margin: 'auto'}}></div>
       </div>
   );
