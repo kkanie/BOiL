@@ -14,8 +14,8 @@ def calculate_time_reserves(tasks, predecessors):
             if pre and t.ES < pre.EF:
 
                 t.ES = pre.EF
-        print(t.desc, 'ES', t.ES)
-        print(t.desc, 'EF',t.EF)
+        print(t.id, 'ES', t.ES)
+        print(t.id, 'EF',t.EF)
         t.EF = t.ES + int(t.duration)
         t.save()
 
@@ -56,4 +56,4 @@ def convert_successors_to_predecessors_format(tasks):
 
 def find_critical_path(tasks):
     # iteruje po taskach i zwraca sciezke krytyczna
-    return [t.desc for t in tasks if t.critical == 'YES']
+    return [t.id for t in tasks if t.critical == 'YES']
