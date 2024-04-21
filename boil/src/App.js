@@ -11,7 +11,7 @@ import WynikList from "./components/Wynik.jsx";
 function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [rows, setRows] = useState([]);
-  // const [wynik, setWynik] = useState([]);
+  const [wynik, setState] = useState([]);
   
 
 
@@ -125,6 +125,13 @@ function App() {
     //   }
   // })
   }
+  const handleCalculate = async ()=>{
+    axios.get(`http://127.0.0.1:8000/api/calculate/`)
+      .then(res => {
+        const wynik = res.data.tasks;
+        console.log(wynik)
+      })
+  }
 
 //   const handleCalculate = async() =>{
 //     // GET request using axios with async/await
@@ -149,7 +156,7 @@ function App() {
             />
         )}
         <button className="btn" onClick={()=>handleSend()}>Wyślij</button>
-        <button className="btn" >Wynik</button>
+        <button className="btn" onClick={()=>handleCalculate()}>Wynik</button>
         <WynikList/>
         <div id="cy" style={{width: '80%', height: '600px', margin: 'auto'}}></div>
       </div>
