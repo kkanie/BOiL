@@ -10,6 +10,8 @@ from django.db.models import Max
 @api_view(['POST'])
 @transaction.atomic
 def create_task(request):
+    Task.objects.all().delete()
+    Activity.objects.all().delete()
     tasks_data = request.data.get('tasks', []) if isinstance(request.data, dict) else request.data
 
     activity_dict = {}

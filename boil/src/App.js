@@ -144,6 +144,7 @@ function App() {
 
   return (
       <div className="App">
+        <div id="cy" style={{width: '80%', height: '600px', margin: 'auto'}}></div>
         <Table rows={rows} deleteRow={handleDeleteRow} editRow={handleEditRow}/>
         <button className="btn" onClick={() => setModalOpen(true)}>Dodaj</button>
         {modalOpen && (<Modal
@@ -158,7 +159,6 @@ function App() {
         <button className="btn" onClick={()=>handleSend()}>Wyślij</button>
         <button className="btn" onClick={()=>handleCalculate()}>Wynik</button>
         <WynikList/>
-        <div id="cy" style={{width: '80%', height: '600px', margin: 'auto'}}></div>
       </div>
   );
 }
